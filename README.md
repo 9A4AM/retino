@@ -24,11 +24,24 @@ How to connect to the USB TTL serial adapter
 |RX|TX|
 |KEY|DTR|
 
+Input "protocol"
+---
+Line oriented
+- ? request settings
+- ttttttffffff 6 characters that represent the sonde type, right padded with blanks, followed by 6 charactes indicating the requested frequency in kHz
+
+Output "protocol"
+---
+Line oriented, first character specifies record type:
+- D: decoded data. Followed by key:value pairs separated by commas
+- P: raw packet. Followed by data in hex. Data is already "massaged" (manchester decoded and dewhitened)
+- #: response to confirm new settings. Followed by sonde type and  frequency in Hz separated by '@'
 
 Reverse engineering of the HC-14 module
 ---
 - Processor: Nuvoton MS51XC0BE
 - Radio module: Semtech SX1278
+- [PG2179TB](https://www.mouser.com/datasheet/2/286/nec_cel_upg2179tb-1186632.pdf) RF switch
 
 ![HC-14 module schematic](HC-14.svg "HC-14 module schematic")
 
@@ -50,5 +63,4 @@ Userful links
 ---
 - https://github.com/OpenNuvoton/MS51_BSP
 - https://wolles-elektronikkiste.de/en/hc-14-the-simple-lora-module
-- https://www.mouser.com/datasheet/2/286/nec_cel_upg2179tb-1186632.pdf
 - https://github.com/misaz/Nuvoton8051ProgrammingLib

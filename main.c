@@ -326,7 +326,6 @@ bool startsWith(const char *s, const char *prefix) {
   while (*prefix!=0)
     if (toupper(*s++)!=toupper(*prefix++)) return false;
   return true;
-  //return strncmp(s,prefix,strlen(prefix))==0;
 }
 
 void printSettings(SondeType sondeType, uint32_t freq) {
