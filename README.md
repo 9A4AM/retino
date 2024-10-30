@@ -6,6 +6,14 @@ What is it
 ---
 An alternative firmware for the HC-14 LoRa modules for receiving and decoding meteorological radiosondes. To be used in conjunction with a USB TTL serial adapter
 
+Currently able to receive the following radiosondes:
+- Vaisala RS41[^1]
+- Meteomodem M10
+- Meteomodem M20
+- Graw DFM09
+
+[^1]: Receive only, no decoding. Raw packet transmitted to host
+
 How to connect to the USB TTL serial adapter
 ---
 |HC-14|adapter|
