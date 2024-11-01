@@ -56,9 +56,10 @@ static void Nuvoton8051_WriteData(uint8_t value, uint32_t isLastTransfer, uint32
 	Nuvoton8051_WriteBits(value, 8);
 
 	Nuvoton8051_GpioSetDatState(!!isLastTransfer);
-	Nuvoton8051_DelayUs(delayTime1);
-
-	Nuvoton8051_GpioSetClkState(1);
+  if (delayTime1!=0) {
+    Nuvoton8051_DelayUs(delayTime1);
+    Nuvoton8051_GpioSetClkState(1);
+  }
 	Nuvoton8051_DelayUs(delayTime2);
 
 	Nuvoton8051_GpioSetClkState(0);
@@ -75,7 +76,7 @@ void Nuvoton8051_Init() {
 
 void Nuvoton8051_MassErase() {
 	Nuvoton8051_SendCommand(38, 0x3a5a5);
-	Nuvoton8051_WriteData(255, 1, 50000, 500);
+	Nuvoton8051_WriteData(255, 1, 0, 500);
 }
 
 uint32_t Nuvoton8051_ReadFlash(uint32_t address, uint32_t size, uint8_t *buffer) {

@@ -16,7 +16,7 @@ void Nuvoton8051_GpioInit() {
 void Nuvoton8051_DelayUs(uint32_t periodUs) {
   // while function is named DelayUs is better to delay aprox 20 - 50 us instead.
   // remember to multiple wait time with parameter.
-  delayMicroseconds(periodUs * 30);
+  delayMicroseconds(periodUs * 5);
 }
 
 void Nuvoton8051_GpioSetRstState(uint32_t level) {
