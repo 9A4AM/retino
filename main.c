@@ -389,8 +389,6 @@ void main(void) {
   
   initGPIO();
   
-  while (P14) ;	//wait for DTR
-
   Timer0_AutoReload_Interrupt_Initial(24,1000);
     
   UART_Open(F_CPU,UART0_Timer3,115200);
@@ -445,11 +443,24 @@ void main(void) {
     }
     if (messageReceived) {
       switch (rxBuff[0]) {
+	case 0:
 	case '@':
+	  UARTSendString("reboot\n");
+	  delay(300);
 	  rebootFromLDROM();
 	  break;
 	case '?':
 	  printSettings(sondeType,freq);
+	  break;
+	case '0':
+	  P15=0;
+	  P17=1;
+	  UARTSendString("P15=0 P17=1\n");
+	  break;
+	case '1':
+	  P15=1;
+	  P17=0;
+	  UARTSendString("P15=1 P17=0\n");
 	  break;
 	default:
 	  selectSonde(rxBuff);
@@ -458,37 +469,5 @@ void main(void) {
       messageReceived=false;
       messageRead=true;
     }
-    /*if (uart0_receive_flag) {
-      uart0_receive_flag = 0;
-      DISABLE_UART0_INTERRUPT;
-      uint8_t ch=uart0_receive_data;
-      //UART_Send_Data(UART0,ch);
-      ENABLE_UART0_INTERRUPT;
-      switch (ch) {
-	case '\r':
-	  break;
-	case '\n':
-	  switch (rxBuff[0]) {
-	    case '@':
-	      rebootFromLDROM();
-	      break;
-	    case '?':
-	      printSettings(sondeType,freq);
-	      break;
-	    default:
-	      selectSonde(rxBuff);
-	      break;
-	  }
-	  nRx=0;
-	  break;
-	default:
-	  rxBuff[nRx++]=ch;
-	  if (nRx==sizeof rxBuff) {
-	    nRx=0;
-	    UARTSendString("?\n");
-	  }
-	  break;
-      }
-    }*/
   }
 } 

@@ -63,7 +63,7 @@ void eraseFlash() {
 void lock() {
   Nuvoton8051_EntryMode();
   Serial.println("locking: writing CFG");
-  uint8_t cfg[] = { 0x6D, 0xFC, 0xFF, 0xFF, 0xFF };  //3kB LDROM size
+  uint8_t cfg[] = { 0xFD, 0xFC, 0xFF, 0xFF, 0x5F };  //3kB LDROM size
   Nuvoton8051_ProgramCFG(cfg);  
   Nuvoton8051_ExitMode();
 }

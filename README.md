@@ -4,13 +4,29 @@ The poor man's radiosonde receiver
 
 What is it
 ---
-An alternative firmware for the HC-14 LoRa modules for receiving and decoding meteorological radiosondes. To be used in conjunction with a USB TTL serial adapter
+An alternative firmware for the HC-14 LoRa modules for receiving and decoding meteorological radiosondes. To be used in conjunction with a USB TTL serial adapter.
 
 Currently able to receive the following radiosondes:
 - Vaisala RS41[^1]
 - Meteomodem M10
 - Meteomodem M20
 - Graw DFM09
+
+The HC14Prog directory contains a sketch that enables an Arduino Nano (or similar board) to reprogram the HC-14 module. you need to connect 3 test points and power/ground to the Arduino as follows:
+
+|Arduino|HC-14|
+|---|---|
+|5V|VCC|
+|GND|GND|
+|D2|nRESET|
+|D3|ICE_CLK|
+|D4|ICE_DAT|
+
+This is only for the first time programming since you will be able to upgrade via a bootloader and the standard NuvoISP utility.
+
+---
+&#x26A0; **Needless to say the original firmware will be lost forever, you will not be able to use your HC-14 module as before**
+---
 
 [^1]: Receive only, no decoding. Raw packet transmitted to host
 
@@ -22,20 +38,20 @@ How to connect to the USB TTL serial adapter
 |GND|GND|
 |TX|RX|
 |RX|TX|
-|KEY|DTR|
 
 Input "protocol"
 ---
 Line oriented
 - ? request settings
-- ttttttffffff 6 characters that represent the sonde type, right padded with blanks, followed by 6 charactes indicating the requested frequency in kHz
+- ttttttffffff 6 characters that represent the sonde type, case insensitive (rs41,m10,m20,dfm09), right padded with blanks, followed by 6 charactes indicating the requested frequency *in kHz*
+- @ reboot in bootloader mode (for firmware updates)
 
 Output "protocol"
 ---
 Line oriented, first character specifies record type:
 - D: decoded data. Followed by key:value pairs separated by commas
 - P: raw packet. Followed by data in hex. Data is already "massaged" (manchester decoded and dewhitened)
-- #: response to confirm new settings. Followed by sonde type and  frequency in Hz separated by '@'
+- #: response to confirm new settings. Followed by sonde type and  frequency *in Hz* separated by '@'
 
 Reverse engineering of the HC-14 module
 ---
@@ -61,6 +77,6 @@ Other connections:
 
 Userful links
 ---
-- https://github.com/OpenNuvoton/MS51_BSP
-- https://wolles-elektronikkiste.de/en/hc-14-the-simple-lora-module
-- https://github.com/misaz/Nuvoton8051ProgrammingLib
+- [MS51_BSP](https://github.com/OpenNuvoton/MS51_BSP)
+- [HC-14 – the simple LoRa module](https://wolles-elektronikkiste.de/en/hc-14-the-simple-lora-module)
+- [Nuvoton8051ProgrammingLib](https://github.com/misaz/Nuvoton8051ProgrammingLib)
