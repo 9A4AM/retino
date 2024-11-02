@@ -34,7 +34,7 @@ How to connect to the USB TTL serial adapter
 ---
 |HC-14|adapter|
 |---|---|
-|VCC|VCC|
+|VCC|+5V|
 |GND|GND|
 |TX|RX|
 |RX|TX|
@@ -43,7 +43,7 @@ Input "protocol"
 ---
 Line oriented
 - ? request settings
-- ttttttffffff 6 characters that represent the sonde type, case insensitive (rs41,m10,m20,dfm09), right padded with blanks, followed by 6 charactes indicating the requested frequency *in kHz*
+- ttttttffffff 6 characters that represent the sonde type, case insensitive (rs41,m10,m20,dfm09), right padded with blanks, followed by 6 charactes indicating the requested frequency in kHz
 - @ reboot in bootloader mode (for firmware updates)
 
 Output "protocol"
@@ -51,7 +51,7 @@ Output "protocol"
 Line oriented, first character specifies record type:
 - D: decoded data. Followed by key:value pairs separated by commas
 - P: raw packet. Followed by data in hex. Data is already "massaged" (manchester decoded and dewhitened)
-- #: response to confirm new settings. Followed by sonde type and  frequency *in Hz* separated by '@'
+- #: current settings. Followed by sonde type and  frequency in kHz separated by '@'
 
 Reverse engineering of the HC-14 module
 ---

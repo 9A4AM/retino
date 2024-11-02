@@ -321,18 +321,32 @@ void initGPIO(void) {
   P11=0;
 }
 
-
 bool startsWith(const char *s, const char *prefix) {
   while (*prefix!=0)
     if (toupper(*s++)!=toupper(*prefix++)) return false;
   return true;
 }
 
+void readSettings(void) {
+  sondeType=Read_SPROM_BYTE(0);
+  if (sondeType==0xFF) {
+    sondeType=RS41;
+    freq=405950UL;
+  }
+  else
+    Read_SPROM_DATAFLASH_ARRAY(1,(uint8_t*)&freq,4);
+}
+
+void writeSettings(void) {
+  Write_SPROM_DATAFLASH_ARRAY(0,&sondeType,1);
+  Write_SPROM_DATAFLASH_ARRAY(1,(uint8_t*)&freq,4);
+}
+
 void printSettings(SondeType sondeType, uint32_t freq) {
   UARTSendString("#");
   UARTSendString(sondes[sondeType]->name);
   UARTSendString("@");
-  __ultoa(freq,s,10);
+  __ultoa(freq/1000,s,10);
   UARTSendString(s);
   UARTSendString("\n");
 }
@@ -371,7 +385,7 @@ void selectSonde(char *buf) {
   sondeType=t;
   lat=lng=alt=0;
   *serial='\0';
-  
+  writeSettings();
   packetLength=sondes[sondeType]->packetLength;
 
   initRadio();
@@ -395,7 +409,7 @@ void main(void) {
   ENABLE_UART0_INTERRUPT;
   ENABLE_GLOBAL_INTERRUPT;
 
-  //UARTSendString("\x1B[2J\x1B[HVia!\n");
+  readSettings();
   printSettings(sondeType,freq);
 
   packetLength=sondes[sondeType]->packetLength;
