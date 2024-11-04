@@ -116,7 +116,7 @@ uint32_t Nuvoton8051_ProgramFlash(uint32_t address, uint32_t size, uint8_t* buff
 	return address + size;
 }
 
-void Nuvoton8051_EraseFlashPage(uint32_t address) {
+/*void Nuvoton8051_EraseFlashPage(uint32_t address) {
 	Nuvoton8051_SendCommand(34, address);
 	Nuvoton8051_WriteData(255, 1, erasePageDelay, 100);
 }
@@ -132,7 +132,7 @@ uint32_t Nuvoton8051_ProgramSPROM(uint32_t address, uint32_t size, uint8_t* buff
 void Nuvoton8051_EraseSPROM(void) {
 	Nuvoton8051_EraseFlashPage(0x1800002);
 }
-
+*/
 uint32_t Nuvoton8051_ReadCFG(uint8_t *buffer) {
 	return Nuvoton8051_ReadFlash(0x30000, 5, buffer);
 }
@@ -146,10 +146,10 @@ uint32_t Nuvoton8051_ProgramCFG(uint8_t* buffer) {
 	buffer[3] = 0xFF;
 	return Nuvoton8051_ProgramFlash(0x30000, 5, buffer, 0);
 }
-
+/*
 void Nuvoton8051_EraseCFG() {
 	Nuvoton8051_EraseFlashPage(0x30000);
-}
+}*/
 
 void Nuvoton8051_EntryMode() {
 	Nuvoton8051_DelayUs(200);

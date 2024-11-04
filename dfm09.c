@@ -121,33 +121,12 @@ static void processDat(uint8_t type, uint8_t* data) {
       break;*/
     case LAT:
       lat = ((uint32_t)data[0] << 24 | (uint32_t)data[1] << 16 | (uint32_t)data[2] << 8 | (uint32_t)data[3]) / 1e7;
-      /*UARTSendString("\tlat: ");
-      __itoa(lat,s,10);
-      UARTSendString(s);
-      UARTSendString(".");
-      __ultoa((uint32_t)((lat-(int)lat)*1000000UL),s,10);
-      UARTSendString(s);
-      UARTSendString("\n");*/
       break;
     case LON:
       lng = ((uint32_t)data[0] << 24 | (uint32_t)data[1] << 16 | (uint32_t)data[2] << 8 | (uint32_t)data[3]) / 1e7;
-      /*UARTSendString("\tlng: ");
-      __itoa(lng,s,10);
-      UARTSendString(s);
-      UARTSendString(".");
-      __ultoa((uint32_t)((lng-(int)lat)*1000000UL),s,10);
-      UARTSendString(s);
-      UARTSendString("\n");*/
       break;
     case ALT:
       alt = ((uint32_t)data[0] << 24 | (uint32_t)data[1] << 16 | (uint32_t)data[2] << 8 | (uint32_t)data[3]) / 1e2;
-      /*UARTSendString("\talt: ");
-      __itoa(alt,s,10);
-      UARTSendString(s);
-      UARTSendString(".");
-      __itoa((uint32_t)((alt-(int)alt)*10),s,10);
-      UARTSendString(s);
-      UARTSendString("\n");*/
       break;
     default:
       valid=false;
@@ -168,12 +147,7 @@ int processPacketDFM09(uint8_t *buf) {
   }
   else {
     uint8_t confType = dat[0] >> 4;
-    //sprintf(s,"conf type: %1X, data: ", confType);
-    //UARTSendString(s);
     for (int i = 0; i < 7 / 2; i++) dat[i] = dat[2 * i + 1] & 0xF0 | dat[2 * i + 2] >> 4;
-    //~ sprintf(s,"\n%02X ",confType);
-    //~ UARTSendString(s);
-    //~ dump(dat, 7 / 2);
     processConf(confType, dat);
   }
 
@@ -185,9 +159,7 @@ int processPacketDFM09(uint8_t *buf) {
   }
   else {
     uint8_t dat1Type = dat[12] >> 4;
-    //Serial.printf("dat1 type: %1X, data: ", dat1Type);
     for (int i = 0; i < 13 / 2; i++) dat[i] = dat[2 * i] & 0xF0 | dat[2 * i + 1] >> 4;
-    //dump(dat, 13 / 2);
     processDat(dat1Type, dat);
   }
 
@@ -199,9 +171,7 @@ int processPacketDFM09(uint8_t *buf) {
   }
   else {
     uint8_t dat2Type = dat[12] >> 4;
-    //Serial.printf("dat2 type: %1X, data: ", dat2Type);
     for (int i = 0; i < 13 / 2; i++) dat[i] = dat[2 * i] & 0xF0 | dat[2 * i + 1] >> 4;
-    //dump(dat, 13 / 2);
     processDat(dat2Type, dat);
   }
   return DFM09_PACKET_LENGTH/2;

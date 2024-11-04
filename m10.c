@@ -1,19 +1,5 @@
 #include "m10.h"
 
-static void m10_frame_descramble(M10Frame *frame) {
-  //TODO: unificare con M20 (lunghezze diverse dei pacchetti)
-  uint8_t *raw_frame = (uint8_t*)frame;
-  uint8_t tmp, topbit;
-  int i;
-
-  topbit = 0;
-  for (i=0; i<(int)sizeof(*frame); i++) {
-    tmp = raw_frame[i] << 7;
-    raw_frame[i] ^= 0xFF ^ (topbit | raw_frame[i] >> 1);
-    topbit = tmp;
-  }
-}
-
 static float m10_9f_lat(const M10Frame_9f* f) {
   int32_t lat =  (uint32_t)f->lat[0] << 24 | (uint32_t)f->lat[1] << 16 | (uint32_t)f->lat[2] << 8 | f->lat[3];
   return lat * 360.0 / ((uint64_t)1UL << 32);
@@ -34,7 +20,6 @@ static void m10_9f_serial(char *dst, const M10Frame_9f *frame) {
     serial_1 = frame->serial[0],
     serial_2 = frame->serial[3] | (uint16_t)frame->serial[4] << 8;
 
-  //sprintf(dst, "%03d-%d-%1d%04d", serial_0, serial_1, serial_2 >> 13, serial_2 & 0x1FFF);
   itoaWithZeroes(serial_0,dst,10,3);
   itoaWithZeroes(serial_1,dst+4,10,1);
   itoaWithZeroes(serial_2>>13,dst+6,10,1);
@@ -64,11 +49,7 @@ static int m10_frame_correct(M10Frame_9f *frame) {
 
   if (manchesterDecode(buf,&frame.len, M10_PACKET_LENGTH)) {
     for (int i=0;i<M10_PACKET_LENGTH/2;i++) ((uint8_t*)&frame.len)[i]^=0xFF;
-    //dump((uint8_t*)&frame,sizeof frame);
-    //*m10_frame_descramble((M10Frame*)&frame);
     descramble((uint8_t*)&frame,sizeof(M10Frame));
-    //UARTSendString("descramble\n");
-    //dump(out, M10_PACKET_LENGTH/2);
     if (m10_frame_correct(&frame)==0) {
       m10_9f_serial(serial,&frame);
       lat=m10_9f_lat(&frame);

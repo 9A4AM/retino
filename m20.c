@@ -1,14 +1,5 @@
 #include "m20.h"
 
-/*void descramble(uint8_t *frame) {
-  uint8_t topbit=0;
-  for (int i=0;i<M20_PACKET_LENGTH/2;i++) {
-    uint8_t tmp = frame[i] << 7;
-    frame[i] ^= 0xFF ^ (topbit | frame[i] >> 1);
-    topbit = tmp;
-  }
-}*/
-
 void descramble(uint8_t *frame,int packetLength) {
   uint8_t tmp, topbit=0;
   for (int i=0;i<packetLength;i++) {
@@ -39,10 +30,6 @@ bool checkCrc(uint8_t *frame) {
     uint16_t crc_calc = 0;
     for (int i=0;i<M20_PACKET_LENGTH/2-2;i++)
         crc_calc = m10CrcStep(crc_calc,frame[i]);
-  //~ if (crc!=crc_calc) {
-    //~ sprintf(s,"%04X %04X\n",crc,crc_calc);
-    //~ UARTSendString(s);
-  //~ }
     return crc == crc_calc;
 }
 
@@ -53,7 +40,6 @@ static void decodeFrame(uint8_t *a) {
   uint8_t y=ym/12;
   uint8_t m=ym%12+1;
   
-  //sprintf(serial,"%d%02d-%d-%d%04d",y,m,s2&0x3+2,(s2>>(2+13))&0x1,(s2>>2)&0x1FFF);
   itoaWithZeroes(y,serial,10,1);
   itoaWithZeroes(m,serial+1,10,2);
   serial[3]='-';

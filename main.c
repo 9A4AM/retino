@@ -115,7 +115,6 @@ void initSPI(void) {
 }
 
 void Serial_ISR(void) __interrupt (4) {
-  //TODO: bufferizzazione
   PUSH_SFRS;
   if (RI) {
     uart0_receive_flag = 1;
@@ -165,7 +164,6 @@ void dumpRegisters(void) {
     UARTSendString("\n");
   }
 }
-#endif
 
 void dump(uint8_t buf[], int size) {
   UARTSendString("\n(");
@@ -182,6 +180,7 @@ void dump(uint8_t buf[], int size) {
   //if (size % 16 != 0) UARTSendString("\n");
   UARTSendString(")\n");
 }
+#endif
 
 uint8_t calcMantExp(uint16_t bw) {
   uint8_t exp = 1;
@@ -410,7 +409,6 @@ void main(void) {
   ENABLE_GLOBAL_INTERRUPT;
 
   readSettings();
-  printSettings(sondeType,freq);
 
   packetLength=sondes[sondeType]->packetLength;
   
@@ -466,6 +464,13 @@ void main(void) {
 	case '?':
 	  printSettings(sondeType,freq);
 	  break;
+	case 'b':
+	  UARTSendString("Build time: ");
+	  UARTSendString(__DATE__);
+	  UARTSendString(" ");
+	  UARTSendString(__TIME__);
+	  UARTSendString("\n");
+	  break;
 	case '0':
 	  P15=0;
 	  P17=1;
@@ -476,8 +481,11 @@ void main(void) {
 	  P17=0;
 	  UARTSendString("P15=1 P17=0\n");
 	  break;
+	case '!':
+	  selectSonde(rxBuff+1);
+	  break;
 	default:
-	  selectSonde(rxBuff);
+	  UARTSendString("?\n");
 	  break;
       }
       messageReceived=false;

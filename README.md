@@ -12,7 +12,7 @@ Currently able to receive the following radiosondes:
 - Meteomodem M20
 - Graw DFM09
 
-The HC14Prog directory contains a sketch that enables an Arduino Nano (or similar board) to reprogram the HC-14 module. you need to connect 3 test points and power/ground to the Arduino as follows:
+In case you don't own a NuLink programmer, the HC14Prog directory contains a sketch that enables an Arduino Nano (or similar board) to reprogram the HC-14 module. you need to connect 3 test points and power/ground to the Arduino as follows:
 
 |Arduino|HC-14|
 |---|---|
@@ -43,7 +43,8 @@ Input "protocol"
 ---
 Line oriented
 - ? request settings
-- ttttttffffff 6 characters that represent the sonde type, case insensitive (rs41,m10,m20,dfm09), right padded with blanks, followed by 6 charactes indicating the requested frequency in kHz
+- b request build time
+- !ttttttffffff 6 characters that represent the sonde type, case insensitive (rs41,m10,m20,dfm09), right padded with blanks, followed by 6 charactes indicating the requested frequency in kHz
 - @ reboot in bootloader mode (for firmware updates)
 
 Output "protocol"

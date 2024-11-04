@@ -16,6 +16,7 @@ main: $(OBJ)
 	sdcc -o build/ $(SDCCOPTS) $^ StdDriver.lib
 	cp build/$@.ihx build/$@.hex
 	hex2bin build/$@.hex > /dev/nul
+	python genImage.py > HC14Prog/fw.h
 
 build/main.rel:	sx1278.h rs41.h main.h m20.h m10.h dfm09.h
 build/rs41.rel:	rs41.h main.h
