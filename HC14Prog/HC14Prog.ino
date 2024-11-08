@@ -43,6 +43,8 @@ void flush() {
   Serial.println(currentAddress);
   uint32_t res = Nuvoton8051_ProgramFlash(currentAddress, nBytesInBuffer, buffer, 1);
   if (res != currentAddress + nBytesInBuffer) {
+    Serial.println(currentAddress);
+    Serial.println(nBytesInBuffer);
     Serial.print("Error verifying at byte: ");
     Serial.println(res);
     return;

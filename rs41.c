@@ -10,6 +10,7 @@ const uint8_t __code whitening[64] = {
 int processPacketRS41(uint8_t *buf) {
   for (int i=0;i<RS41_PACKET_LENGTH;i++)
     buf[i]=whitening[i%sizeof whitening]^flipByte(buf[i]);
+  printPos();
   
   return RS41_PACKET_LENGTH;
 }

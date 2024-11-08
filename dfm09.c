@@ -1,6 +1,7 @@
 #include "dfm09.h"
-//TODO: printPos
+
 #define MAXLEN 13
+
 enum datType { SEQ = 0,
                TIME = 1,
                LAT = 2,
@@ -131,18 +132,19 @@ static void processDat(uint8_t type, uint8_t* data) {
     default:
       valid=false;
   }
-  if (valid) printPos(serial,lat,lng,alt);
+  if (valid) printPos();
 }
 
 int processPacketDFM09(uint8_t *buf) {
   uint8_t dat[13];
   
+  UARTSendString("PKT DFM09\n");
   if (!manchesterDecode(buf,buf,DFM09_PACKET_LENGTH))
     return 0;
   deinterleave(buf, dat,  7);
   int err = hamming(dat, 7);
   if (err < 0) {
-    UARTSendString("\nECC conf\n");
+    UARTSendString("\n#ECC conf\n");
     return 0;
   }
   else {
@@ -154,7 +156,7 @@ int processPacketDFM09(uint8_t *buf) {
   deinterleave(buf + 7, dat, 13);
   err = hamming(dat, 13);
   if (err < 0) {
-    UARTSendString("\nECC DAT1\n");
+    UARTSendString("\n#ECC DAT1\n");
     return 0;
   }
   else {

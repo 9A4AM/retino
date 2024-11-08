@@ -51,7 +51,7 @@ static void decodeFrame(uint8_t *a) {
   lat = ((uint32_t)a[0x1C+0] << 24 | (uint32_t)a[0x1C+1] << 16 | (uint32_t)a[0x1C+2] << 8 | a[0x1C+3])/1e6;
   lng = ((uint32_t)a[0x20+0] << 24 | (uint32_t)a[0x20+1] << 16 | (uint32_t)a[0x20+2] << 8 | a[0x20+3])/1e6;
   alt = ((uint32_t)a[8]<<16 | (uint32_t)a[9]<<8 | a[10])/1e2;
-  printPos(serial,lat,lng,alt);
+  printPos();
 }
 
 

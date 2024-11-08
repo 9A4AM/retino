@@ -26,6 +26,6 @@ uint8_t flipByte(uint8_t b);
 bool manchesterDecode(uint8_t* data, uint8_t *out, int len);
 void dump(uint8_t buf[], int size);
 void itoaWithZeroes(uint32_t val,char *dst,int base,int digits);
-void printPos(char * serial,float lat,float lng,float alt);
+void printPos(void);
 void dumpPacket(uint8_t buf[],int length);
 #endif

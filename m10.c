@@ -55,7 +55,7 @@ static int m10_frame_correct(M10Frame_9f *frame) {
       lat=m10_9f_lat(&frame);
       lng=m10_9f_lon(&frame);
       alt=m10_9f_alt(&frame);
-      printPos(serial,lat,lng,alt);
+      printPos();
       return M10_PACKET_LENGTH/2;
     }
     else

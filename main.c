@@ -28,7 +28,7 @@ uint16_t nCurByte=0;
 char __xdata s[25], serial[12];
 float lat,lng,alt;
 uint64_t tLastPacket=0;
-int packetLength;
+int packetLength, rssi;
 volatile uint64_t _millis=0;
 int volatile nRx=0;
 char volatile __xdata rxBuff[20];
@@ -51,8 +51,16 @@ void dumpPacket(uint8_t buf[],int length) {
   UARTSendString("\n");
 }
 
-void printPos(char *serial,float lat,float lng,float alt) {
-  //TODO: aggiungere RSSI
+void printRSSI(void) {
+  UARTSendString("rssi:-");
+  __itoa(rssi/2,s,10);
+  UARTSendString(s);
+  UARTSendString(".");
+  UARTSendString(rssi&1?"5":"0");
+  UARTSendString("dBm\n");
+}
+
+void printPos(void) {
   UARTSendString("D");
   UARTSendString("Ser:");
   UARTSendString(serial);
@@ -73,8 +81,9 @@ void printPos(char *serial,float lat,float lng,float alt) {
   UARTSendString(s);
   UARTSendString(".");
   itoaWithZeroes((alt-(int)alt)*10,s,10,1);
-  UARTSendString(s);      
-  UARTSendString("\n");
+  UARTSendString(s);
+  UARTSendString(",");
+  printRSSI();
 }
 
 uint64_t millis(void) {
@@ -95,23 +104,27 @@ void Timer0_ISR (void) __interrupt (1) {
 }
 
 void initSPI(void) {      
-    P12_QUASI_MODE;                                  // (SS) Quasi mode
-    P10_QUASI_MODE;                                  // P10 (SPCLK) Quasi mode
-    P00_QUASI_MODE;                                  // P00 (MOSI) Quasi mode
-    P01_QUASI_MODE;                                  // P01 (MISO) Quasi mode
-    
-    set_SPSR_DISMODF;                                // SS General purpose I/O ( No Mode Fault ) 
-    clr_SPCR_SSOE;
-   
-    clr_SPCR_LSBFE;                                  // MSB first
+  P12_QUASI_MODE;                                  // (SS) Quasi mode
+  P10_QUASI_MODE;                                  // P10 (SPCLK) Quasi mode
+  P00_QUASI_MODE;                                  // P00 (MOSI) Quasi mode
+  P01_QUASI_MODE;                                  // P01 (MISO) Quasi mode
+  
+  ENABLE_SPI0_MOSI_P00;
+  ENABLE_SPI0_MISO_P01;
+  ENABLE_SPI0_CLK_P10;
+  
+  set_SPSR_DISMODF;                                // SS General purpose I/O ( No Mode Fault ) 
+  clr_SPCR_SSOE;
+ 
+  clr_SPCR_LSBFE;                                  // MSB first
 
-    clr_SPCR_CPOL;                                   // The SPI clock is low in idle mode
-    set_SPCR_CPHA;                                   // The data is sample on the second edge of SPI clock 
-    
-    set_SPCR_MSTR;                                   // SPI in Master mode 
-    SPICLK_FSYS_DIV2;                                    // Select SPI clock 
-    set_SPCR_SPIEN;                                  // Enable SPI function 
-    clr_SPSR_SPIF;
+  clr_SPCR_CPOL;                                   // The SPI clock is low in idle mode
+  set_SPCR_CPHA;                                   // The data is sample on the second edge of SPI clock 
+  
+  set_SPCR_MSTR;                                   // SPI in Master mode 
+  SPICLK_FSYS_DIV2;                                    // Select SPI clock 
+  set_SPCR_SPIEN;                                  // Enable SPI function 
+  clr_SPSR_SPIF;
 }
 
 void Serial_ISR(void) __interrupt (4) {
@@ -257,7 +270,7 @@ void initRadio(void) {
   writeRegister(RegAfcBw,calcMantExp(sondes[sondeType]->afcBandWidth));
   writeRegister(RegRxBw,calcMantExp(sondes[sondeType]->bandWidth));
   
-  writeRegister(RegRxConfig,1<<4|1<<3|6);	//AFC, AGC, Rx Trigger AGC
+  writeRegister(RegRxConfig,1<<4|1<<3|7);	//AFC, AGC, Rx Trigger AGC
   
   writeRegister(RegSyncConfig,1<<6|1<<4|(sondes[sondeType]->syncWordLen/8-1));		//autorestart w/o PLL wait, sync on, sync on, n bytes sync word
   if (sondes[sondeType]->preambleLength>0) {
@@ -309,15 +322,12 @@ void initGPIO(void) {
   P06_PUSHPULL_MODE;		//UART0 TX
   P07_INPUT_MODE;		//UART0 RX
   P13_INPUT_MODE;		//RXTX sx1278
-  P15_QUASI_MODE;		//switch vcont1
-  P17_QUASI_MODE;		//switch vcont2
+  P15_PUSHPULL_MODE;		//switch vcont1
+  P17_PUSHPULL_MODE;		//switch vcont2
   P04_INPUT_MODE;		//DIO1
   P03_INPUT_MODE;		//DIO2
   P05_QUASI_MODE;		//NRESET
   P11_PUSHPULL_MODE;		//LED
-  P14_QUASI_MODE;		//DTR
-
-  P11=0;
 }
 
 bool startsWith(const char *s, const char *prefix) {
@@ -330,7 +340,7 @@ void readSettings(void) {
   sondeType=Read_SPROM_BYTE(0);
   if (sondeType==0xFF) {
     sondeType=RS41;
-    freq=405950UL;
+    freq=405950000UL;
   }
   else
     Read_SPROM_DATAFLASH_ARRAY(1,(uint8_t*)&freq,4);
@@ -412,23 +422,14 @@ void main(void) {
 
   packetLength=sondes[sondeType]->packetLength;
   
-  //switch antenna to rx circuitry (hopefully)
-  P15=0;
-  P17=1;
-
+  //switch antenna to rx circuitry
+  P15=1;
+  P17=0;
+  
   initSPI();
   initRadio();
   nCurByte=0;
   while (1) {
-    /*uint8_t flags1=readRegister(RegIrqFlags1),
-      flags2=readRegister(RegIrqFlags2);
-
-    if (flags1&Flags1SyncAddressMatch) {
-      writeRegister(RegIrqFlags1,Flags1SyncAddressMatch);
-      UARTSendString("SYNC---------------\n");
-      //nCurByte=0;
-    }*/
-    
     if (tLastPacket!=0 && millis()-tLastPacket>100) {
       P11=0;
       tLastPacket=0;
@@ -450,6 +451,8 @@ void main(void) {
       nCurByte=0;
     }
     if (P03) {	//DIO1: fifo level
+      if (nCurByte==0)
+	rssi=readRegister(RegRssiValue);
       for (int i=0;i<48 && nCurByte<packetLength;i++,nCurByte++)
 	buf[nCurByte]=readRegister(RegFIFO);
     }
@@ -464,22 +467,19 @@ void main(void) {
 	case '?':
 	  printSettings(sondeType,freq);
 	  break;
-	case 'b':
+	case '$':
+	  rssi=readRegister(RegRssiValue);
+	  printRSSI();
+	  break;
+	case '*':
 	  UARTSendString("Build time: ");
 	  UARTSendString(__DATE__);
 	  UARTSendString(" ");
 	  UARTSendString(__TIME__);
 	  UARTSendString("\n");
 	  break;
-	case '0':
-	  P15=0;
-	  P17=1;
-	  UARTSendString("P15=0 P17=1\n");
-	  break;
-	case '1':
-	  P15=1;
-	  P17=0;
-	  UARTSendString("P15=1 P17=0\n");
+	case '=':
+	  printPos();
 	  break;
 	case '!':
 	  selectSonde(rxBuff+1);
