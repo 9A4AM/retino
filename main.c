@@ -269,17 +269,21 @@ void initRadio(void) {
   
   writeRegister(RegAfcBw,calcMantExp(sondes[sondeType]->afcBandWidth));
   writeRegister(RegRxBw,calcMantExp(sondes[sondeType]->bandWidth));
+  writeRegister(RegFdevLsb, sondes[sondeType]->frequencyDeviation / 61);
+  writeRegister(RegFdevMsb, (sondes[sondeType]->frequencyDeviation / 61) >> 8);
   
   writeRegister(RegRxConfig,1<<4|1<<3|7);	//AFC, AGC, Rx Trigger AGC
   
   writeRegister(RegSyncConfig,1<<6|1<<4|(sondes[sondeType]->syncWordLen/8-1));		//autorestart w/o PLL wait, sync on, sync on, n bytes sync word
   if (sondes[sondeType]->preambleLength>0) {
-    writeRegister(RegPreambleDetect,1u<<7|1u<<5|((sondes[sondeType]->preambleLength/8)-1));	//enabled, 2 bytes, 0 errors
-    writeRegister(RegDioMapping2,1);		//Preambe detect enabled
+    //writeRegister(RegPreambleDetect, 1u << 7 | (((sondes[sondeType]->preambleLength-1) / 8) - 1)<<4 | 0xA);
+    //BUGBUG?? 
+    writeRegister(RegPreambleDetect,1u<<7|((sondes[sondeType]->preambleLength/8)-1)<<4|0x8);	//enabled
+    writeRegister(RegDioMapping2,1);		//Preambe detect irq enabled
   }
   else {
     writeRegister(RegPreambleDetect,0);		//disabled
-    writeRegister(RegDioMapping2,0);		//Preamble detect disabled
+    writeRegister(RegDioMapping2,0);		//Preamble detect irq disabled
   }
 
   //writeRegisters(RegSyncValue1,syncWord,sizeof syncWord);
@@ -456,6 +460,10 @@ void main(void) {
       for (int i=0;i<48 && nCurByte<packetLength;i++,nCurByte++)
 	buf[nCurByte]=readRegister(RegFIFO);
     }
+    uint8_t irq2=readRegister(RegIrqFlags2);
+    if ((irq2 & 0x10)!=0) { //FIFO overrun
+      nCurByte=0;
+    }
     if (messageReceived) {
       switch (rxBuff[0]) {
 	case 0:
@@ -466,6 +474,11 @@ void main(void) {
 	  break;
 	case '?':
 	  printSettings(sondeType,freq);
+	  UARTSendString("@\treboot in bootloader mode\n");
+	  UARTSendString("$\tprint RSSI\n");
+	  UARTSendString("*\tprint build time\n");
+	  UARTSendString("=\tprint last position\n");
+	  UARTSendString("!ssssssFFFFFF set sonde type ssssss at FFFFFF kHz\n");
 	  break;
 	case '$':
 	  rssi=readRegister(RegRssiValue);
@@ -474,7 +487,7 @@ void main(void) {
 	case '*':
 	  UARTSendString("Build time: ");
 	  UARTSendString(__DATE__);
-	  UARTSendString(" ");
+	  UARTSendString(", ");
 	  UARTSendString(__TIME__);
 	  UARTSendString("\n");
 	  break;
